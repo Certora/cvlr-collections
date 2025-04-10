@@ -1,9 +1,16 @@
 [package]
 name = "cvlr-vectors"
-authors = ["Jorge A. Navas <jorge@certora.com>"]
+description.workspace = true
 version.workspace = true
-edition = "2021"
-
+edition.workspace = true
+license.workspace = true
+categories.workspace = true
+keywords.workspace = true
+authors.workspace = true
+documentation.workspace = true
+readme.workspace = true
+homepage.workspace = true
+repository.workspace = true
 
 [dependencies]
 borsh0_10 = { package = "borsh", version = "0.10" }
