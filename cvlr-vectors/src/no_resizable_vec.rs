@@ -437,4 +437,146 @@ mod test {
         assert_eq!(iter.next(), Some(3));
         assert_eq!(iter.next(), None);
     }
+
+    #[test]
+    fn test_bin_search1() {
+        let mut vec: NoResizableVec<u64> = NoResizableVec::new(3);
+
+        vec.push(5);
+        vec.push(15);
+        vec.push(25);
+
+        {
+            let v: u64 = 5;
+            let found = vec.binary_search(&v);
+            assert!(found.is_ok());
+        }
+        {
+            let v: u64 = 15;
+            let found = vec.binary_search(&v);
+            assert!(found.is_ok());
+        }
+        {
+            let v: u64 = 25;
+            let found = vec.binary_search(&v);
+            assert!(found.is_ok());
+        }
+        {
+            let v: u64 = 35;
+            let found = vec.binary_search(&v);
+            assert!(found.is_err());
+        }
+    }
+
+    #[test]
+    fn test_bin_search2() {
+        let mut vec: NoResizableVec<u64> = NoResizableVec::new(3);
+        vec.push(4);
+        vec.push(7);
+        vec.push(9);
+
+        {
+            let v: u64 = 5;
+            let found = vec.binary_search(&v);
+            assert!(found.is_err());
+        }
+        {
+            let v: u64 = 9;
+            let found = vec.binary_search(&v);
+            assert!(found.is_ok());
+        }
+        {
+            let v: u64 = 4;
+            let found = vec.binary_search(&v);
+            assert!(found.is_ok());
+        }
+        {
+            let v: u64 = 35;
+            let found = vec.binary_search(&v);
+            assert!(found.is_err());
+        }
+    }
+
+    #[test]
+    pub fn test_bin_search3() {
+        let mut vec: NoResizableVec<u64> = NoResizableVec::new(3);
+
+        let v1: u64 = 5;
+        let v2: u64 = 15;
+        let v3: u64 = 25;
+        match vec.binary_search(&v1) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec.insert(pos, v1),
+        }
+
+        match vec.binary_search(&v2) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec.insert(pos, v2),
+        }
+
+        match vec.binary_search(&v3) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec.insert(pos, v3),
+        }
+
+        assert_eq!(vec.len(), 3);
+        assert!(vec.binary_search(&v1).is_ok());
+        assert!(vec.binary_search(&v2).is_ok());
+        assert!(vec.binary_search(&v3).is_ok());
+    }
+
+    #[test]
+    fn test_bin_search4() {
+        let mut vec1: NoResizableVec<u64> = NoResizableVec::new(3);
+        let mut vec2: NoResizableVec<u64> = NoResizableVec::new(3);
+
+        let v1: u64 = 5;
+        let v2: u64 = 15;
+        let v3: u64 = 25;
+        match vec1.binary_search(&v1) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec1.insert(pos, v1),
+        }
+
+        match vec1.binary_search(&v2) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec1.insert(pos, v2),
+        }
+
+        match vec1.binary_search(&v3) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec1.insert(pos, v3),
+        }
+
+        /////
+
+        match vec2.binary_search(&v1) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec2.insert(pos, v1),
+        }
+
+        match vec2.binary_search(&v2) {
+            Ok(_) => {
+                assert!(false);
+            }
+            Err(pos) => vec2.insert(pos, v2),
+        }
+
+        assert!(vec1.binary_search(&v3).is_ok());
+        assert!(vec2.binary_search(&v3).is_err());
+    }
 }
