@@ -76,6 +76,10 @@ impl<T> NoResizableVec<T> {
         self.len
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
     pub fn capacity(&self) -> usize {
         self.buf.cap
     }
@@ -155,7 +159,6 @@ impl<T> Drop for NoResizableVec<T> {
 /// - BosrhSerialize
 /// - BorshDeserialize
 //////////////////
-
 impl<T> Clone for NoResizableVec<T> {
     fn clone(&self) -> Self {
         let raw_vec = RawVec::new(self.capacity());
@@ -217,8 +220,7 @@ impl<T> IndexMut<usize> for NoResizableVec<T> {
 pub mod borsh0_9 {
     use super::*;
 
-    impl<T> ::borsh0_9::BorshSerialize for NoResizableVec<T>
-    {
+    impl<T> ::borsh0_9::BorshSerialize for NoResizableVec<T> {
         // Not implemented
         fn serialize<W: Write>(&self, _writer: &mut W) -> Result<()> {
             cvlr_assert!(false);
@@ -226,8 +228,7 @@ pub mod borsh0_9 {
         }
     }
 
-    impl<T> ::borsh0_9::BorshDeserialize for NoResizableVec<T>
-    {
+    impl<T> ::borsh0_9::BorshDeserialize for NoResizableVec<T> {
         // Not implemented
         fn deserialize(_buf: &mut &[u8]) -> Result<Self> {
             cvlr_assert!(false);
@@ -239,8 +240,7 @@ pub mod borsh0_9 {
 pub mod borsh0_10 {
     use super::*;
 
-    impl<T> ::borsh0_10::BorshSerialize for NoResizableVec<T>
-    {
+    impl<T> ::borsh0_10::BorshSerialize for NoResizableVec<T> {
         // Not implemented
         fn serialize<W: Write>(&self, _writer: &mut W) -> Result<()> {
             cvlr_assert!(false);
@@ -248,8 +248,7 @@ pub mod borsh0_10 {
         }
     }
 
-    impl<T> ::borsh0_10::BorshDeserialize for NoResizableVec<T>
-    {
+    impl<T> ::borsh0_10::BorshDeserialize for NoResizableVec<T> {
         // Not implemented
         fn deserialize(_buf: &mut &[u8]) -> Result<Self> {
             cvlr_assert!(false);
@@ -267,7 +266,6 @@ pub mod borsh0_10 {
 /////////////////////////
 /// Iterator
 /////////////////////////
-
 pub struct IntoIter<T> {
     _buf: RawVec<T>,
     start: *const T,
@@ -287,7 +285,7 @@ impl<T> Iterator for IntoIter<T> {
                     self.start = self.start.offset(1);
                     Some(ptr::read(old))
                 } else {
-                    self.start = (self.start as usize + 1 * mem::align_of::<T>()) as *const _;
+                    self.start = (self.start as usize + mem::align_of::<T>()) as *const _;
                     Some(ptr::read(NonNull::<T>::dangling().as_ptr()))
                 }
             }
@@ -298,7 +296,7 @@ impl<T> Iterator for IntoIter<T> {
         let elem_size = mem::size_of::<T>();
         let exact = (self.end as usize - self.start as usize)
             / if elem_size == 0 {
-                1 * mem::align_of::<T>()
+                mem::align_of::<T>()
             } else {
                 elem_size
             };
@@ -337,9 +335,9 @@ impl<T> IntoIterator for NoResizableVec<T> {
     }
 }
 
-/////////////////////
-/// Macros
-/////////////////////
+////////////////////
+// Macros
+////////////////////
 
 #[macro_export]
 macro_rules! cvt_no_resizable_vec {
@@ -364,3 +362,79 @@ macro_rules! cvt_no_resizable_vec {
 }
 
 pub use cvt_no_resizable_vec;
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_push_and_pop() {
+        let mut vec = NoResizableVec::new(3);
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec.pop(), Some(3));
+        assert_eq!(vec.pop(), Some(2));
+        assert_eq!(vec.pop(), Some(1));
+        assert_eq!(vec.pop(), None);
+    }
+
+    #[test]
+    fn test_insert_and_remove() {
+        let mut vec = NoResizableVec::new(3);
+        vec.push(1);
+        vec.push(3);
+        vec.insert(1, 2);
+
+        assert_eq!(vec.len(), 3);
+        assert_eq!(vec[0], 1);
+        assert_eq!(vec[1], 2);
+        assert_eq!(vec[2], 3);
+
+        assert_eq!(vec.remove(1), 2);
+        assert_eq!(vec.len(), 2);
+        assert_eq!(vec[0], 1);
+        assert_eq!(vec[1], 3);
+    }
+
+    #[test]
+    fn test_find() {
+        let mut vec = NoResizableVec::new(3);
+        vec.push(10);
+        vec.push(20);
+        vec.push(30);
+
+        assert_eq!(vec.find(&20), Some(1));
+        assert_eq!(vec.find(&40), None);
+    }
+
+    #[test]
+    fn test_clone() {
+        let mut vec = NoResizableVec::new(3);
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        let cloned_vec = vec.clone();
+        assert_eq!(cloned_vec.len(), 3);
+        assert_eq!(cloned_vec[0], 1);
+        assert_eq!(cloned_vec[1], 2);
+        assert_eq!(cloned_vec[2], 3);
+    }
+
+    #[test]
+    fn test_into_iter() {
+        let mut vec = NoResizableVec::new(3);
+        vec.push(1);
+        vec.push(2);
+        vec.push(3);
+
+        let mut iter = vec.into_iter();
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), None);
+    }
+}

@@ -12,12 +12,16 @@ readme.workspace = true
 homepage.workspace = true
 repository.workspace = true
 
+[features]
+rt = ["cvlr-asserts/rt", "cvlr-nondet/rt"]
+certora-debug = []
+
 [dependencies]
 borsh0_10 = { package = "borsh", version = "0.10" }
 borsh0_9 = { package = "borsh", version = "0.9" }
 cvlr-asserts = { workspace = true }
 cvlr-nondet = { workspace = true }
 
-[features]
-certora-debug = []
+[dev-dependencies]
+cvlr-vectors = { path = ".", features = ["rt"] }
 
