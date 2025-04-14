@@ -45,7 +45,7 @@ impl<T> RawVec<T> {
 impl<T> Drop for RawVec<T> {
     fn drop(&mut self) {
         // ZSTs have no memory allocation
-        if mem::size_of::<T>() == 0 {
+        if mem::size_of::<T>() == 0 || self.cap == 0 {
             return;
         }
 
